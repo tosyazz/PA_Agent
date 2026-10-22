@@ -11,6 +11,10 @@ logger = logging.getLogger(__name__)
 
 def main(argv: list[str] | None = None) -> int:
     # Early diagnostics before Qt / heavy imports: crash dumps + file logging.
+    # 先把 stdout/stderr 收进程序内控制台，再由 configure_logging 复用同一个流
+    from pa_agent.gui.console_stream import install_console_capture
+
+    install_console_capture()
     from pa_agent.util.crash_diagnostics import enable_crash_diagnostics, log_startup_diagnostics
     from pa_agent.util.logging import configure_logging
 

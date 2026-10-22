@@ -1,12 +1,12 @@
 ﻿#requires -Version 5.1
 <#
 .SYNOPSIS
-    每小时整点后 10 秒自动点击 PA Agent 的「获取数据」→「提交分析」。
+    每小时整点自动点击 PA Agent 的「获取数据」→「提交分析」。
 
 .DESCRIPTION
     通过 Windows UI Automation 操作 PA Agent 窗口，无需鼠标键盘。
-    计划任务在整点（HH:00:00）触发，脚本内部再等 StartDelaySeconds 秒，
-    等效于「每小时 HH:00:10」执行。
+    整点（HH:00:00）触发，脚本等待 3 秒后执行，
+    即每小时 HH:00:03 开始。
     默认行为：执行一次（供计划任务调用）。
         -Install    注册计划任务（每小时整点触发）
         -Uninstall  删除计划任务
@@ -18,7 +18,7 @@ param(
     [switch]$Uninstall,
     [switch]$Status,
     [int]$WaitSeconds = 12,
-    [int]$StartDelaySeconds = 10
+    [int]$StartDelaySeconds = 3
 )
 
 $ErrorActionPreference = 'Stop'
@@ -101,6 +101,20 @@ if ($Status) {
 
 # ---------- 单次执行 ----------
 Write-Log '--- 触发：开始取数 + 提交分析 ---'
+
+# 程序内「整点提交」开关（config\hourly_submit.json，缺省视为开启）
+$switchPath = Join-Path $ProjectRoot 'config\hourly_submit.json'
+if (Test-Path $switchPath) {
+    try {
+        $switch = Get-Content -LiteralPath $switchPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ($switch.enabled -eq $false) {
+            Write-Log '整点提交已在程序里关闭，本次跳过'
+            exit 0
+        }
+    } catch {
+        Write-Log "读取整点提交开关失败（按开启处理）：$($_.Exception.Message)"
+    }
+}
 
 if ($StartDelaySeconds -gt 0) {
     Write-Log "等待 $StartDelaySeconds 秒，对齐到整点后 $StartDelaySeconds 秒"

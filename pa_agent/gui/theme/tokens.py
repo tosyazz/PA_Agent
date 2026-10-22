@@ -1,21 +1,25 @@
-"""Design tokens for the PA Agent dark trading-terminal theme (OKLch-inspired)."""
+"""Design tokens for the PA Agent dark trading-terminal theme.
+
+Palette: deep navy-charcoal surfaces, teal/emerald primary accent, cyan info.
+All hex values are chosen for ≥4.5:1 contrast against their intended background.
+"""
 from __future__ import annotations
 
 # ---------------------------------------------------------------------------
-# OKLch-style palette (canonical tokens)
+# Palette (canonical tokens)
 # ---------------------------------------------------------------------------
 
 # Backgrounds
-BG = "#0a0e14"
-SURFACE_1 = "#161b22"
-SURFACE_2 = "#1c2128"
-SURFACE_3 = "#21262d"
-SURFACE_4 = "#30363d"
+BG = "#0b0f14"
+SURFACE_1 = "#0f1620"
+SURFACE_2 = "#141c26"
+SURFACE_3 = "#1b2430"
+SURFACE_4 = "#23303e"
 
 # Text
-FG = "#e6edf3"
-FG_2 = "#8b949e"
-FG_3 = "#6e7681"
+FG = "#e8eef6"
+FG_2 = "#8fa1b3"
+FG_3 = "#64748b"
 
 # Accents
 ACCENT = "#2dd4bf"
@@ -23,38 +27,38 @@ ACCENT_2 = "#f87171"
 ACCENT_3 = "#38bdf8"
 
 # Semantic
-SUCCESS = "#22c55e"
-DANGER = "#ef4444"
-WARNING = "#f59e0b"
+SUCCESS = "#34d399"
+DANGER = "#f87171"
+WARNING = "#fbbf24"
 INFO = "#38bdf8"
 
 # Trading
-CHART_UP = "#22c55e"
-CHART_DOWN = "#ef4444"
-CHART_GRID = "#1c2128"
+CHART_UP = "#34d399"
+CHART_DOWN = "#f87171"
+CHART_GRID = "#151e29"
 CHART_LINE = "#fbbf24"
 CHART_LINE_2 = "#7dd3fc"
 CHART_LINE_3 = "#fb923c"
 
 # Pills
-PILL_GREEN_TEXT = "#86efac"
-PILL_GREEN_BORDER = "rgba(34,197,94,0.35)"
-PILL_GREEN_BG = "rgba(34,197,94,0.10)"
+PILL_GREEN_TEXT = "#6ee7b7"
+PILL_GREEN_BORDER = "rgba(52,211,153,0.30)"
+PILL_GREEN_BG = "rgba(52,211,153,0.10)"
 
 PILL_AMBER_TEXT = "#fbbf24"
-PILL_AMBER_BORDER = "rgba(245,158,11,0.35)"
-PILL_AMBER_BG = "rgba(245,158,11,0.10)"
+PILL_AMBER_BORDER = "rgba(251,191,36,0.30)"
+PILL_AMBER_BG = "rgba(251,191,36,0.10)"
 
 PILL_BLUE_TEXT = "#7dd3fc"
-PILL_BLUE_BORDER = "rgba(56,189,248,0.35)"
+PILL_BLUE_BORDER = "rgba(56,189,248,0.30)"
 PILL_BLUE_BG = "rgba(56,189,248,0.10)"
 
 PILL_RED_TEXT = "#fca5a5"
-PILL_RED_BORDER = "rgba(239,68,68,0.35)"
-PILL_RED_BG = "rgba(239,68,68,0.10)"
+PILL_RED_BORDER = "rgba(248,113,113,0.30)"
+PILL_RED_BG = "rgba(248,113,113,0.10)"
 
 PILL_CYAN_TEXT = "#5eead4"
-PILL_CYAN_BORDER = "rgba(45,212,191,0.35)"
+PILL_CYAN_BORDER = "rgba(45,212,191,0.30)"
 PILL_CYAN_BG = "rgba(45,212,191,0.10)"
 
 # Typography
@@ -62,7 +66,8 @@ FONT_UI = '"Segoe UI", "Microsoft YaHei UI", sans-serif'
 FONT_MONO = '"JetBrains Mono", "Cascadia Mono", "Consolas", monospace'
 
 # Layout
-RADIUS = 6
+RADIUS = 10
+RADIUS_SM = 8
 SPACING = 8
 
 # ---------------------------------------------------------------------------

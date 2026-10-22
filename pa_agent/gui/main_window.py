@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QMainWindow,
@@ -401,9 +402,31 @@ class MainWindow(QMainWindow):
         outer_layout.setContentsMargins(8, 8, 8, 8)
         outer_layout.setSpacing(6)
 
-        # ── Control bar ───────────────────────────────────────────────────────
-        ctrl_layout = QHBoxLayout()
-        ctrl_layout.setSpacing(8)
+        # ── Header: brand + market chips + primary actions ───────────────────
+        header_frame = QFrame()
+        header_frame.setObjectName("appHeader")
+        ctrl_layout = QHBoxLayout(header_frame)
+        ctrl_layout.setContentsMargins(14, 8, 14, 8)
+        ctrl_layout.setSpacing(10)
+
+        _brand_title = QLabel("PA Agent")
+        _brand_title.setObjectName("brandTitle")
+        ctrl_layout.addWidget(_brand_title)
+        _brand_sub = QLabel("Trading Terminal")
+        _brand_sub.setObjectName("brandSub")
+        ctrl_layout.addWidget(_brand_sub)
+        _brand_sub.hide()
+        _header_divider = QFrame()
+        _header_divider.setObjectName("headerDivider")
+        _header_divider.setFixedSize(1, 24)
+        ctrl_layout.addWidget(_header_divider)
+
+        # ── Secondary (thin) toolbar: tracking + chart tools + status ─────────
+        secondary_bar = QWidget()
+        secondary_bar.setObjectName("toolbarSecondary")
+        _secondary_layout = QHBoxLayout(secondary_bar)
+        _secondary_layout.setContentsMargins(14, 2, 14, 2)
+        _secondary_layout.setSpacing(10)
 
         _settings = getattr(self._ctx, "settings", None)
         _last_symbol = "000001"
@@ -426,7 +449,7 @@ class MainWindow(QMainWindow):
             _last_ds = "mt5"
         self._active_data_source_kind = _last_ds
 
-        ctrl_layout.addWidget(QLabel("数据来源:"))
+        # 头部只留 chip，标签由 tooltip 说明（对齐新版布局）
         self._data_source_combo = QComboBox()
         for kind, label in DATA_SOURCE_CHOICES:
             self._data_source_combo.addItem(label, kind)
@@ -501,7 +524,7 @@ class MainWindow(QMainWindow):
         self._tv_exchange_combo.currentIndexChanged.connect(
             self._on_tv_exchange_changed
         )
-        ctrl_layout.addWidget(self._tv_exchange_label)
+        self._tv_exchange_label.hide()
         ctrl_layout.addWidget(self._tv_exchange_combo)
 
         # 品种选择 (仅东方财富期货数据源显示, 两级选择: 品种→合约)
@@ -512,12 +535,12 @@ class MainWindow(QMainWindow):
         self._variety_combo.currentIndexChanged.connect(
             self._on_variety_combo_changed
         )
-        ctrl_layout.addWidget(self._variety_label)
+        self._variety_label.hide()
         ctrl_layout.addWidget(self._variety_combo)
 
         # 合约/品种 — editable combo (user can type any symbol)
         self._symbol_label = QLabel("合约:")
-        ctrl_layout.addWidget(self._symbol_label)
+        self._symbol_label.hide()
         self._symbol_combo = QComboBox()
         self._symbol_combo.setEditable(True)
         self._symbol_combo.setCurrentText(_last_symbol)
@@ -533,7 +556,7 @@ class MainWindow(QMainWindow):
         ctrl_layout.addWidget(self._symbol_alert_label)
 
         # Timeframe
-        ctrl_layout.addWidget(QLabel("周期:"))
+        # 周期标签同样收进 tooltip
         self._tf_combo = QComboBox()
         self._tf_combo.addItems(["1m", "5m", "15m", "1h", "4h", "1d"])
         self._tf_combo.setCurrentText(_last_tf)
@@ -541,6 +564,17 @@ class MainWindow(QMainWindow):
         ctrl_layout.addWidget(self._tf_combo)
         self._populate_timeframe_combo_for_source()
         self._sync_tv_exchange_visibility()
+
+        # Keep the header compact: combos must not demand their widest item width.
+        for _cb in (self._data_source_combo, self._tv_exchange_combo,
+                    self._symbol_combo, self._tf_combo):
+            try:
+                _cb.setSizeAdjustPolicy(
+                    QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+                )
+                _cb.setMinimumContentsLength(9)
+            except Exception:  # noqa: BLE001
+                pass
 
         # 实时价格标签 — 仅显示当前品种最新价（涨红跌绿，加密货币惯例）
         self._price_label = QLabel("")
@@ -566,19 +600,19 @@ class MainWindow(QMainWindow):
         self._fetch_data_btn.clicked.connect(self._on_fetch_data_clicked)
         ctrl_layout.addWidget(self._fetch_data_btn)
 
-        self._wait_close_checkbox = QCheckBox("等待最新K线收盘后再提交分析")
+        self._wait_close_checkbox = QCheckBox("等收盘再分析")
         self._wait_close_checkbox.setObjectName("waitCloseCheckbox")
         self._wait_close_checkbox.setChecked(False)
         self._wait_close_checkbox.setToolTip(
             "勾选后，点击提交分析将先等待当前未收盘K线走完，再抓取数据并开始分析"
         )
         self._wait_close_checkbox.stateChanged.connect(self._on_wait_close_checkbox_changed)
-        ctrl_layout.addWidget(self._wait_close_checkbox)
+        _secondary_layout.addWidget(self._wait_close_checkbox)
 
         self._wait_close_countdown_label = QLabel("")
         self._wait_close_countdown_label.setObjectName("mutedLabel")
         self._wait_close_countdown_label.setMinimumWidth(100)
-        ctrl_layout.addWidget(self._wait_close_countdown_label)
+        _secondary_layout.addWidget(self._wait_close_countdown_label)
 
         self._submit_btn = QPushButton("提交分析")
         self._submit_btn.setObjectName("primaryButton")
@@ -612,7 +646,23 @@ class MainWindow(QMainWindow):
             "勾选后，每当有新的K线收盘时自动开始新一轮分析"
         )
         self._keep_analysis_checkbox.stateChanged.connect(self._on_keep_analysis_checkbox_changed)
-        ctrl_layout.addWidget(self._keep_analysis_checkbox)
+        _secondary_layout.addWidget(self._keep_analysis_checkbox)
+        _secondary_layout.addSpacing(34)
+
+        # 整点提交：控制 Windows 计划任务每小时是否自动取数 + 提交分析
+        from pa_agent.config.hourly_switch import (
+            is_hourly_enabled,
+            set_hourly_enabled,
+        )
+
+        self._hourly_checkbox = QCheckBox("整点提交")
+        self._hourly_checkbox.setToolTip(
+            "勾选后每小时 :00:03 自动点击「获取数据」并提交分析；"
+            "取消勾选后定时脚本会直接跳过（不影响已安装在系统里的计划任务）"
+        )
+        self._hourly_checkbox.setChecked(is_hourly_enabled())
+        self._hourly_checkbox.stateChanged.connect(self._on_hourly_checkbox_changed)
+        _secondary_layout.addWidget(self._hourly_checkbox)
 
         # Reset persisted keep_analysis flag so future restarts also start unchecked
         if _settings is not None:
@@ -627,24 +677,26 @@ class MainWindow(QMainWindow):
             "恢复 K 线实时刷新；最右侧未收盘 K 线为浅色空心 K 线，不参与 AI 分析"
         )
         self._resume_chart_btn.clicked.connect(self._on_resume_chart_refresh)
-        ctrl_layout.addWidget(self._resume_chart_btn)
+        _secondary_layout.addWidget(self._resume_chart_btn)
 
         self._fit_chart_btn = QPushButton("恢复图表")
         self._fit_chart_btn.setToolTip(
             "自动调整图表缩放，将 K 线和价格线适配到可视区域"
         )
         self._fit_chart_btn.clicked.connect(self._on_fit_chart)
-        ctrl_layout.addWidget(self._fit_chart_btn)
+        _secondary_layout.addWidget(self._fit_chart_btn)
 
         self._decision_badge = QLabel("")
         self._decision_badge.setObjectName("mutedLabel")
-        ctrl_layout.addWidget(self._decision_badge)
+        _secondary_layout.addStretch(1)
+        _secondary_layout.addWidget(self._decision_badge)
 
         self._ai_mode_label = QLabel("")
         self._ai_mode_label.setObjectName("mutedLabel")
-        ctrl_layout.addWidget(self._ai_mode_label)
+        _secondary_layout.addWidget(self._ai_mode_label)
 
-        outer_layout.addLayout(ctrl_layout)
+        outer_layout.addWidget(header_frame)
+        outer_layout.addWidget(secondary_bar)
 
         self._api_key_alert_label = QLabel(
             "未配置 API Key：请点击左上角「AI 模型」按钮，在设置中填写 API Key 后才能进行 AI 分析。"
@@ -666,12 +718,10 @@ class MainWindow(QMainWindow):
         )
         outer_layout.addWidget(self._disclaimer_label)
 
-        status_row = QHBoxLayout()
-        status_row.addStretch()
         self._last_refresh_ts: float = 0.0
         self._refresh_elapsed_label = QLabel("距上次刷新: —")
         self._refresh_elapsed_label.setObjectName("mutedLabel")
-        status_row.addWidget(self._refresh_elapsed_label)
+        _secondary_layout.addWidget(self._refresh_elapsed_label)
 
         from PyQt6.QtCore import QTimer as _QTimer
         self._elapsed_ticker = _QTimer(tab)
@@ -679,14 +729,14 @@ class MainWindow(QMainWindow):
         self._elapsed_ticker.timeout.connect(self._update_refresh_elapsed)
         self._elapsed_ticker.start()
 
-        outer_layout.addLayout(status_row)
+
 
         # ── FlowBar: 5-step analysis progress indicator ───────────────────────
         from pa_agent.gui.widgets.flow_bar import FlowBar
         self._flow_bar = FlowBar()
         self._flow_bar.setFixedHeight(52)
         self._flow_bar.setStyleSheet(
-            "background-color: #161b22; border-bottom: 1px solid #30363d;"
+            "background-color: #0f1620; border: 1px solid #1b2430; border-radius: 12px;"
         )
         outer_layout.addWidget(self._flow_bar)
 
@@ -733,6 +783,21 @@ class MainWindow(QMainWindow):
         )
 
         return tab
+
+    def _on_hourly_checkbox_changed(self, state: int) -> None:
+        """Persist the hourly-job switch read by tools/auto_fetch_analyze.ps1."""
+        from pa_agent.config.hourly_switch import set_hourly_enabled
+
+        enabled = bool(state)
+        try:
+            set_hourly_enabled(enabled)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("保存整点提交开关失败: %s", exc)
+        self._status_bar.showMessage(
+            "整点提交已开启（每小时 :00:03 自动取数+分析）" if enabled
+            else "整点提交已关闭，定时任务将跳过",
+            5000,
+        )
 
     def _connect_event_bus(self) -> None:
         """Wire EventBus signals to status bar and tab slots (if bus is ready)."""
@@ -1005,18 +1070,15 @@ class MainWindow(QMainWindow):
         return text.upper()
 
     def _sync_tv_exchange_visibility(self) -> None:
-        """Show exchange field only for TradingView, allow manual selection."""
-        visible = (
-            self._current_data_source_kind() == "tradingview"
-            and not getattr(self, "_demo_mode", False)
-        )
+        """交易所选择已从界面移除：TradingView 始终使用「（自动）」探测。"""
         for w in (
             getattr(self, "_tv_exchange_label", None),
             getattr(self, "_tv_exchange_combo", None),
         ):
             if w is not None:
-                w.setVisible(visible)
-                w.setEnabled(visible)
+                w.setVisible(False)
+                w.setEnabled(False)
+        self._force_tv_exchange_auto()
 
     def _force_tv_exchange_auto(self) -> None:
         """Force TradingView exchange UI to «auto» (empty string)."""

@@ -28,13 +28,13 @@ class _MetricCard(QFrame):
     ) -> None:
         super().__init__(parent)
         self.setMinimumWidth(0)
-        self.setMinimumHeight(50)
+        self.setMinimumHeight(44)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.setStyleSheet(
-            "background-color: #1c2128; "
-            "border: 1px solid #30363d; "
-            "border-radius: 6px;"
+            "background-color: #0f1620; "
+            "border: 1px solid #1b2430; "
+            "border-radius: 10px;"
         )
 
         layout = QVBoxLayout(self)
@@ -43,7 +43,7 @@ class _MetricCard(QFrame):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._title = QLabel(title)
-        self._title.setStyleSheet("font-size: 11px; color: #8b949e;")
+        self._title.setStyleSheet("font-size: 11px; color: #8fa1b3;")
         self._title.setWordWrap(False)
         layout.addWidget(self._title)
 
@@ -53,11 +53,11 @@ class _MetricCard(QFrame):
         self._value.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Minimum)
         if primary:
             self._value.setStyleSheet(
-                f"font-size: 14px; font-weight: bold; color: #86efac; font-family: {_FONT_MONO};"
+                f"font-size: 14px; font-weight: bold; color: #6ee7b7; font-family: {_FONT_MONO};"
             )
         else:
             self._value.setStyleSheet(
-                f"font-size: 13px; font-weight: bold; color: #e6edf3; font-family: {_FONT_MONO};"
+                f"font-size: 13px; font-weight: bold; color: #e8eef6; font-family: {_FONT_MONO};"
             )
         layout.addWidget(self._value)
 
@@ -80,7 +80,7 @@ class SummaryStrip(QWidget):
         self.setObjectName("summaryStrip")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.setStyleSheet(
-            "background-color: #161b22; border-bottom: 1px solid #30363d;"
+            "background-color: #161b22; border-bottom: 1px solid #1b2430;"
         )
 
         self._layout = QGridLayout(self)

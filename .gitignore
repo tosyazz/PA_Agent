@@ -113,3 +113,6 @@ docs/changelog/
 Thumbs.db
 Desktop.ini
 .DS_Store
+# Runtime state (machine-local switches / credentials)
+/config/hourly_submit.json
+/config/tradingview.json
