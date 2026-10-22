@@ -20,6 +20,10 @@ def main(argv: list[str] | None = None) -> int:
 
     enable_crash_diagnostics()
     configure_logging()
+    # 本地有代理就用（国内），没有就直连（云电脑/境外）
+    from pa_agent.util.proxy_autodetect import apply_proxy_env_if_needed
+
+    apply_proxy_env_if_needed()
     log_startup_diagnostics()
 
     argv = list(sys.argv if argv is None else argv)
