@@ -22,12 +22,11 @@ from pa_agent.data.tradingview_errors import format_tradingview_fetch_error
 
 logger = logging.getLogger(__name__)
 
-# One attempt per fetch cycle. Each tvDatafeed get_hist() that times out
-# blocks for up to _TV_WS_TIMEOUT_S, so retrying here multiplies the worst-case
-# wait the user sees on a slow/blocked connection. The RefreshLoop already does
-# its own exponential backoff + retry across ticks, so a per-call retry only
-# stacks latency without adding resilience.
-_TV_FETCH_RETRIES = 1
+# TradingView 匿名模式偶发掐断 WebSocket（Connection to remote host was lost /
+# SSL EOF），实测约每 8 次有 1 次。单次失败直接丢弃会让控制台持续报错，也会让
+# 整点自动分析撞上旧数据，所以同一次取数内重试一次；仍失败则交给 RefreshLoop
+# 的退避逻辑处理。一次 fetch 最坏等待仍是 2 × _TV_WS_TIMEOUT_S。
+_TV_FETCH_RETRIES = 2
 _TV_FETCH_RETRY_SLEEP_S = 0.5
 
 # Override tvDatafeed's hardcoded 15s WebSocket timeout. Once the socket leak

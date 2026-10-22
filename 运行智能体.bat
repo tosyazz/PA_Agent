@@ -1,0 +1,13 @@
+@echo off
+chcp 936 >nul 2>&1
+title PA Agent - AI K线分析助手
+rem TradingView 需要代理（Clash 默认端口 7897）；端口不同请改下面两行
+set HTTP_PROXY=http://127.0.0.1:7897
+set HTTPS_PROXY=http://127.0.0.1:7897
+cd /d "%~dp0"
+python run.py
+if errorlevel 1 (
+    echo.
+    echo [错误] 程序异常退出，请查看上方错误信息。
+    pause
+)
