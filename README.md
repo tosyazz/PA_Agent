@@ -47,7 +47,7 @@ python run.py
 ## 云电脑 / 新机器部署（Windows）
 
 ```bat
-git clone https://github.com/rosemarycox5334-debug/PA_Agent.git
+git clone https://github.com/tosyazz/PA_Agent.git
 cd PA_Agent
 python -m venv .venv
 .venv\Scripts\activate
