@@ -9,7 +9,9 @@ if not errorlevel 1 (
     set "HTTPS_PROXY=http://127.0.0.1:7897"
 )
 
-python run.py
+set "PYTHON=python"
+if exist ".venv\Scripts\python.exe" set "PYTHON=.venv\Scripts\python.exe"
+"%PYTHON%" run.py
 if errorlevel 1 (
     echo.
     echo [ERROR] PA Agent exited unexpectedly. See the messages above.

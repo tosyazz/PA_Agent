@@ -64,6 +64,8 @@ python run.py
 
 完整操作界面说明见 [`PA_Agent使用文档.md`](PA_Agent使用文档.md)，配置字段说明见 [`config/README.md`](config/README.md)。
 
+云电脑/新机器、或直接把项目交给智能体安装时，请使用 [`AGENT_INSTALL.md`](AGENT_INSTALL.md)。
+
 ---
 
 **免责声明**：本工具仅供学习与研究，不构成投资建议。交易有风险，决策后果自负。
