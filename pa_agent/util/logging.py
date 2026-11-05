@@ -188,15 +188,15 @@ _LOG_FORMAT = "%(asctime)s %(levelname)-8s %(name)s: %(message)s"
 
 _THIRD_PARTY_LOGGERS = ("urllib3", "openai", "httpx")
 
-# tvdatafeed opens a websocket every refresh tick and logs at DEBUG — keep quiet
+# Third-party HTTP/LLM libraries log at DEBUG on every request — keep quiet
 _QUIET_LOGGER_NAMES = (
     "urllib3",
     "openai",
     "httpx",
-    "tvDatafeed",
-    "tvDatafeed.main",
-    "root",  # tvdatafeed uses logging.getLogger("root") for websocket
-    "websocket",
+    "httpcore",
+    "httpx2",
+    "httpcore2",
+    "hpack",
 )
 
 
@@ -287,7 +287,7 @@ def configure_logging(api_key: str = "") -> None:
 
 
 def _silence_noisy_libraries() -> None:
-    """Turn down chatty third-party DEBUG loggers (tvdatafeed websocket spam)."""
+    """Turn down chatty third-party DEBUG loggers (HTTP client spam)."""
     for name in _QUIET_LOGGER_NAMES:
         logging.getLogger(name).setLevel(logging.WARNING)
 

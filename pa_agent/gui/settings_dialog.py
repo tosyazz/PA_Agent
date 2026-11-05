@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 from PyQt6.QtCore import Qt, QUrl
-from PyQt6.QtGui import QDesktopServices, QFont
+from PyQt6.QtGui import QDesktopServices
 
 from pa_agent.config.settings import Settings, save_settings
 from pa_agent.config.paths import SETTINGS_JSON_PATH
@@ -159,33 +159,21 @@ class SettingsDialog(QDialog):
         self._analysis_bar_count_spin.setRange(2, 5_000)
         self._analysis_bar_count_spin.setToolTip(
             "提交 AI 分析时使用的已收盘 K 线根数（不含当前未收盘 K 线）。"
-            "图表实时刷新也会按此数量拉取显示。"
         )
         general_form.addRow("用于分析的 K 线数量:", self._analysis_bar_count_spin)
 
-        self._refresh_interval_spin = QSpinBox()
-        self._refresh_interval_spin.setRange(100, 10_000)
-        self._refresh_interval_spin.setSuffix(" ms")
-        general_form.addRow("刷新间隔:", self._refresh_interval_spin)
-
-        self._auto_resume_chart_check = QCheckBox("分析完成后自动恢复「图表实时更新」")
-        self._auto_resume_chart_check.setToolTip(
-            "提交分析时图表会暂停刷新并冻结为已收盘 K 线；"
-            "勾选后，分析结束（成功或校验失败但流程已跑完）将自动恢复实时刷新，"
-            "并重新显示最右侧未收盘空心 K 线。演示模式不受影响。"
-        )
-        general_form.addRow("图表:", self._auto_resume_chart_check)
-
-        self._keep_analysis_check = QCheckBox("有新K线收盘时自动开始新一轮分析")
+        self._keep_analysis_check = QCheckBox("新K线收盘时自动获取数据并分析")
         self._keep_analysis_check.setToolTip(
-            "勾选后，每当有新的K线收盘时自动触发分析（与主界面「持续跟踪分析」勾选框同步）"
+            "开启后不轮询行情，只在每根 1h K线收盘时获取一次最新数据，"
+            "获取成功后自动开始一轮分析；获取失败则本轮不分析。"
+            "（与主界面「新K线收盘自动分析」勾选框同步）"
         )
-        general_form.addRow("持续跟踪分析:", self._keep_analysis_check)
+        general_form.addRow("新K线自动分析:", self._keep_analysis_check)
 
-        self._cancel_keep_on_retry_check = QCheckBox("重试后取消持续跟踪分析")
+        self._cancel_keep_on_retry_check = QCheckBox("重试后取消新K线自动分析")
         self._cancel_keep_on_retry_check.setToolTip(
             "勾选后，当 AI 输出触发校验重试（stage1/stage2），"
-            "自动关闭「持续跟踪分析」开关，停止后续自动分析。\n"
+            "自动关闭「新K线收盘自动分析」开关，停止后续自动分析。\n"
             "每次打开程序默认关闭。"
         )
         general_form.addRow("重试行为:", self._cancel_keep_on_retry_check)
@@ -221,7 +209,8 @@ class SettingsDialog(QDialog):
         self._last_symbol_edit = QLineEdit()
         general_form.addRow("上次品种:", self._last_symbol_edit)
 
-        self._last_timeframe_edit = QLineEdit()
+        self._last_timeframe_edit = QLineEdit("1h")
+        self._last_timeframe_edit.setReadOnly(True)
         general_form.addRow("上次周期:", self._last_timeframe_edit)
 
         self._alert_on_order_check = QCheckBox(
@@ -292,10 +281,6 @@ class SettingsDialog(QDialog):
             self._reasoning_effort_combo.setCurrentIndex(idx)
 
         self._analysis_bar_count_spin.setValue(g.analysis_bar_count)
-        self._refresh_interval_spin.setValue(g.refresh_interval_ms)
-        self._auto_resume_chart_check.setChecked(
-            bool(getattr(g, "auto_resume_chart_after_analysis", False))
-        )
         self._keep_analysis_check.setChecked(
             bool(getattr(g, "keep_analysis", False))
         )
@@ -498,8 +483,6 @@ class SettingsDialog(QDialog):
         p.reasoning_effort = self._reasoning_effort_combo.currentText()  # type: ignore[assignment]
 
         g.analysis_bar_count = self._analysis_bar_count_spin.value()
-        g.refresh_interval_ms = self._refresh_interval_spin.value()
-        g.auto_resume_chart_after_analysis = self._auto_resume_chart_check.isChecked()
         g.keep_analysis = self._keep_analysis_check.isChecked()
         g.cancel_keep_analysis_on_retry = self._cancel_keep_on_retry_check.isChecked()
         g.context_warning_threshold_pct = float(self._context_warning_spin.value())

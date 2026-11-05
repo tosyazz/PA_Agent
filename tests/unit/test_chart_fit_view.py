@@ -47,15 +47,15 @@ def chart_widget(qtbot):
 
 
 class TestChartFitView:
-    def test_view_ranges_show_newest_twenty_when_many_bars(self, chart_widget):
+    def test_view_ranges_show_newest_window_when_many_bars(self, chart_widget):
         from pa_agent.gui.chart_widget import _FIT_VISIBLE_BARS
 
-        frame = _sample_frame(n=50)
+        frame = _sample_frame(n=120)
         x_range, _ = chart_widget._view_ranges_for_frame(frame)
-        assert x_range[0] == pytest.approx(50 - _FIT_VISIBLE_BARS - 0.65)
-        assert x_range[1] == pytest.approx(49 + 0.65)
+        assert x_range[0] == pytest.approx(120 - _FIT_VISIBLE_BARS - 0.65)
+        assert x_range[1] == pytest.approx(119 + 0.65)
 
-    def test_view_ranges_include_all_bars_when_fewer_than_twenty(self, chart_widget):
+    def test_view_ranges_include_all_bars_when_fewer_than_window(self, chart_widget):
         frame = _sample_frame(n=8)
         x_range, y_range = chart_widget._view_ranges_for_frame(frame)
         assert x_range[0] < 0

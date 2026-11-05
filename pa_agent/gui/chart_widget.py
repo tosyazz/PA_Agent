@@ -25,12 +25,12 @@ if TYPE_CHECKING:
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 _TIMER_INTERVAL_MS = 33  # ~30 Hz
-_EMA_COLOR = (255, 200, 0)  # amber
+_EMA_COLOR = (255, 214, 10)  # Apple system yellow
 _NO_ORDER_TEXT = "不下单"
 _X_MARGIN_BARS = 0.65
 _Y_PADDING_RATIO = 0.07
 _Y_TOP_EXTRA_RATIO = 0.04
-_FIT_VISIBLE_BARS = 20
+_FIT_VISIBLE_BARS = 50
 _AXIS_RESIZE_MIN_WIDTH = 40
 _AXIS_RESIZE_EDGE_PX = 8
 
@@ -48,9 +48,14 @@ class ChartWidget(pg.PlotWidget):
         super().__init__(parent=parent)
 
         # Configure plot appearance
-        self.setBackground("#0d1117")
-        self.showGrid(x=False, y=True, alpha=0.3)
-        self.getPlotItem().setLabel("left", "Price")
+        self.setBackground("#0B0C10")
+        self.showGrid(x=False, y=True, alpha=0.14)
+        plot_item = self.getPlotItem()
+        plot_item.setLabel("left", "")
+        for axis_name in ("left", "bottom"):
+            axis = plot_item.getAxis(axis_name)
+            axis.setPen(pg.mkPen((255, 255, 255, 34)))
+            axis.setTextPen(pg.mkPen((142, 142, 147)))
 
         # Internal state
         self._latest_frame: KlineFrame | None = None
@@ -383,6 +388,10 @@ class ChartWidget(pg.PlotWidget):
         # so x_pos for bars[i] = (n - 1 - i)
         ema_x: list[float] = []
         ema_y: list[float] = []
+        # Keep the sequence labels readable when the viewport shows many bars:
+        # ~8 labels across the visible width instead of one per two bars.
+        visible_for_labels = min(_FIT_VISIBLE_BARS, n)
+        label_every = max(2, visible_for_labels // 8)
 
         for i, bar in enumerate(bars):
             x_pos = n - 1 - i  # oldest bar at x=0, newest at x=n-1
@@ -395,7 +404,7 @@ class ChartWidget(pg.PlotWidget):
             self._candle_items.append(candle)
 
             # Sequence label — odd seq only; skip forming bar (seq=0)
-            if bar.seq > 0 and bar.seq % 2 == 1:
+            if bar.seq > 0 and (bar.seq - 1) % label_every == 0:
                 label_y = bar.high
                 seq_label = SeqLabelItem(
                     bar.seq,

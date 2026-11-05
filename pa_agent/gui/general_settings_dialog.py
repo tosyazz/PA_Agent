@@ -10,9 +10,7 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox,
     QFormLayout,
     QGroupBox,
-    QHBoxLayout,
     QLineEdit,
-    QMessageBox,
     QPushButton,
     QScrollArea,
     QSpinBox,
@@ -108,22 +106,25 @@ class GeneralSettingsDialog(QDialog):
         )
         analysis_form.addRow("增量分析最大新增K线:", self._incremental_max_new_bars_spin)
 
-        self._keep_analysis_check = QCheckBox("有新K线收盘时自动开始新一轮分析")
+        self._keep_analysis_check = QCheckBox("新K线收盘时自动获取数据并分析")
         self._keep_analysis_check.setToolTip(
-            "勾选后，每当有新的K线收盘时自动触发分析（与主界面「持续跟踪分析」勾选框同步）"
+            "开启后不轮询行情，只在每根 1h K线收盘时获取一次最新数据，"
+            "获取成功后自动开始一轮分析；获取失败则本轮不分析。"
+            "（与主界面「新K线收盘自动分析」勾选框同步）"
         )
-        analysis_form.addRow("持续跟踪分析:", self._keep_analysis_check)
+        analysis_form.addRow("新K线自动分析:", self._keep_analysis_check)
 
-        self._cancel_keep_on_retry_check = QCheckBox("重试后取消持续跟踪分析")
+        self._cancel_keep_on_retry_check = QCheckBox("重试后取消新K线自动分析")
         self._cancel_keep_on_retry_check.setToolTip(
-            "勾选后，当 AI 输出触发校验重试时，自动关闭「持续跟踪分析」开关。"
+            "勾选后，当 AI 输出触发校验重试时，自动关闭「新K线收盘自动分析」开关。"
         )
         analysis_form.addRow("重试行为:", self._cancel_keep_on_retry_check)
 
         self._last_symbol_edit = QLineEdit()
         analysis_form.addRow("上次品种:", self._last_symbol_edit)
 
-        self._last_timeframe_edit = QLineEdit()
+        self._last_timeframe_edit = QLineEdit("1h")
+        self._last_timeframe_edit.setReadOnly(True)
         analysis_form.addRow("上次周期:", self._last_timeframe_edit)
 
         form_layout.addWidget(analysis_group)
@@ -131,14 +132,6 @@ class GeneralSettingsDialog(QDialog):
         # ── 图表与界面 ────────────────────────────────────────────────────────
         ui_group = QGroupBox("图表与界面")
         ui_form = QFormLayout(ui_group)
-
-        self._refresh_interval_spin = QSpinBox()
-        self._refresh_interval_spin.setRange(100, 10_000)
-        self._refresh_interval_spin.setSuffix(" ms")
-        ui_form.addRow("刷新间隔:", self._refresh_interval_spin)
-
-        self._auto_resume_chart_check = QCheckBox("分析完成后自动恢复「图表实时更新」")
-        ui_form.addRow("图表:", self._auto_resume_chart_check)
 
         self._context_warning_spin = QSpinBox()
         self._context_warning_spin.setRange(1, 99_999_999)
@@ -232,10 +225,6 @@ class GeneralSettingsDialog(QDialog):
         self._last_symbol_edit.setText(g.last_symbol)
         self._last_timeframe_edit.setText(g.last_timeframe)
 
-        self._refresh_interval_spin.setValue(g.refresh_interval_ms)
-        self._auto_resume_chart_check.setChecked(
-            bool(getattr(g, "auto_resume_chart_after_analysis", False))
-        )
         self._context_warning_spin.setValue(int(g.context_warning_threshold_pct))
         self._stream_font_spin.setValue(int(getattr(g, "stream_pane_font_pt", 11)))
         self._chart_seq_font_spin.setValue(int(getattr(g, "chart_seq_label_font_pt", 11)))
@@ -264,8 +253,6 @@ class GeneralSettingsDialog(QDialog):
         g.last_symbol = self._last_symbol_edit.text().strip()
         g.last_timeframe = self._last_timeframe_edit.text().strip()
 
-        g.refresh_interval_ms = self._refresh_interval_spin.value()
-        g.auto_resume_chart_after_analysis = self._auto_resume_chart_check.isChecked()
         g.context_warning_threshold_pct = float(self._context_warning_spin.value())
         g.stream_pane_font_pt = self._stream_font_spin.value()
         g.chart_seq_label_font_pt = self._chart_seq_font_spin.value()

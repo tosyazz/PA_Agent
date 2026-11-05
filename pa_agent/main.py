@@ -21,6 +21,7 @@ def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv if argv is None else argv)
     app = QApplication(argv)
     app.setApplicationName("PA Agent")
+    app.setQuitOnLastWindowClosed(True)
 
     from pa_agent.gui.theme import apply_theme
     apply_theme(app)
@@ -33,7 +34,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Update logging with the real API key now that settings are loaded
     if ctx.settings is not None:
-        from pa_agent.util.logging import configure_logging, update_api_key
+        from pa_agent.util.logging import configure_logging
         configure_logging(api_key=ctx.settings.provider.api_key)
         from pa_agent.util.crash_diagnostics import log_startup_diagnostics
         log_startup_diagnostics()
@@ -41,6 +42,7 @@ def main(argv: list[str] | None = None) -> int:
     # Build and show the main window
     from pa_agent.gui.main_window import MainWindow
     window = MainWindow(ctx)
+    app.aboutToQuit.connect(window._shutdown_background_work)
     window.show()
 
     logger.info("Main window shown")

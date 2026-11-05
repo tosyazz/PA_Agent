@@ -81,7 +81,7 @@ def _newest_closed_slice(
     """Return *n* newest closed bars from a newest-first list.
 
     Skips index 0 only when it is still forming. Stale ``closed=False`` after
-    halt (e.g. TradingView) is kept as K1.
+    halt (e.g. a stale exchange feed) is kept as K1.
     """
     if not bars_raw or n < 1:
         return None

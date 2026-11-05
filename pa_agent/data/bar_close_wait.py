@@ -9,7 +9,7 @@ from pa_agent.data.base import KlineBar
 
 _TIMEFRAME_SECONDS_RE = re.compile(r"^(\d+)([mhdw])$", re.IGNORECASE)
 
-# Month uses uppercase M in MT5; UI combos use lowercase units only.
+# UI combos use lowercase units only.
 _TIMEFRAME_SECONDS = {
     "1m": 60,
     "5m": 5 * 60,
@@ -109,10 +109,8 @@ def reference_now_ms(
 
 
 def _looks_like_ashare_symbol(symbol: str | None) -> bool:
-    from pa_agent.data.market_defaults import normalize_ashare_tv_code
-
-    code = normalize_ashare_tv_code(symbol or "")
-    return len(code) == 6 and code.isdigit()
+    """6-digit A-share codes only (legacy hidden sources); crypto pairs never match."""
+    return bool(re.fullmatch(r"\d{6}", str(symbol or "").strip()))
 
 
 def is_bar_still_forming(

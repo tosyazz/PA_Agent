@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from pa_agent.app_context import AppContext
+from pa_agent.config.settings import Settings
 from tests.fixtures.kline_bars import make_newest_first_bars
 from tests.fixtures.validators import schema_test_validator
 from pa_agent.ai.router import route_strategy_files
@@ -66,6 +67,8 @@ def _make_ctx_slow_stage2(tmp_path):
     pending_writer = MagicMock()
 
     ctx = AppContext()
+    ctx.settings = Settings()
+    ctx.settings.provider.api_key = "sk-test-e2e"
     ctx.client = mock_client
     ctx.assembler = mock_assembler
     ctx.router = route_strategy_files
@@ -86,10 +89,13 @@ def test_switch_mid_flight_cancels_worker(qtbot, tmp_path):
 
     window = MainWindow(ctx)
     qtbot.addWidget(window)
+    window._startup_api_key_check_done = True  # skip modal in headless e2e
+    window._prompt_debug_report_for_bug_fix = MagicMock()
+    window._maybe_alert_order_opportunity = MagicMock(return_value=False)
     window.show()
 
-    window._ctx.settings.general.analysis_bar_count = 5
-    window._last_frame_ready_bars = make_newest_first_bars(9, with_forming=True)
+    window._ctx.settings.general.analysis_bar_count = 20
+    window._last_frame_ready_bars = make_newest_first_bars(25, with_forming=True)
 
     window._on_submit_analysis()
     worker = window._worker

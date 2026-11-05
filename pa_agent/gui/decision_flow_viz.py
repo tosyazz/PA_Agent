@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -825,22 +826,21 @@ class DecisionFlowVizPanel(QWidget):
         self._view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self._view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self._view.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
-        self._view.setBackgroundBrush(QBrush(QColor("#05070b")))
+        self._view.setBackgroundBrush(QBrush(QColor("#0B0C10")))
 
         title = QLabel("决策路径可视化")
         title.setObjectName("toolbarTitle")
         title.setStyleSheet(
-            "font-size: 15px; font-weight: 600; letter-spacing: 0.5px;"
+            f"font-size: 16px; font-weight: 600; letter-spacing: -0.2px;"
+            f"color: {T.TEXT_PRIMARY};"
         )
         self._fullscreen_btn = QPushButton("全屏推演")
-        self._fullscreen_btn.setObjectName("decisionFlowFullscreenButton")
-        self._fullscreen_btn.setStyleSheet(
-            f"color: {_NEON_CYAN}; border-color: {_NEON_CYAN}; font-weight: 600;"
-        )
+        self._fullscreen_btn.setObjectName("ghostButton")
+        self._fullscreen_btn.setMinimumHeight(30)
         self._fullscreen_btn.clicked.connect(self._open_fullscreen)
 
         title_row = QHBoxLayout()
-        title_row.setContentsMargins(0, 0, 0, 0)
+        title_row.setContentsMargins(0, 0, 4, 0)
         title_row.addWidget(title)
         title_row.addStretch(1)
         if self._show_controls:
@@ -860,11 +860,17 @@ class DecisionFlowVizPanel(QWidget):
 
         self._hud_label = QLabel("")
         self._hud_label.setTextFormat(Qt.TextFormat.RichText)
+        self._hud_label.setWordWrap(True)
+        self._hud_label.setMinimumWidth(0)
+        self._hud_label.setSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
+        )
         self._hud_label.setStyleSheet(
-            f"background-color: rgba(5, 13, 24, 220);"
-            f"border: 1px solid {_NEON_CYAN}; border-radius: 8px;"
-            f"padding: 8px 10px; color: {T.TEXT_PRIMARY};"
-            f"font-family: Consolas, 'Microsoft YaHei UI'; font-size: 12px;"
+            f"background: rgba(255, 255, 255, 0.045);"
+            f"border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;"
+            f"padding: 8px 12px; color: {T.TEXT_SECONDARY};"
+            f"font-family: 'Segoe UI Variable Text', 'Microsoft YaHei UI';"
+            f"font-size: 11px;"
         )
 
         self._play_status = QLabel("")
@@ -874,8 +880,8 @@ class DecisionFlowVizPanel(QWidget):
         )
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(6)
+        layout.setContentsMargins(16, 10, 16, 14)
+        layout.setSpacing(8)
         layout.addLayout(title_row)
         layout.addWidget(sub)
         from pa_agent.gui.analysis_details import AnalysisDetails
@@ -1045,7 +1051,6 @@ class DecisionFlowVizPanel(QWidget):
         outcome_zh = _OUTCOME_ZH.get(outcome, "待机")
         terminal_id = str(terminal.get("node_id", "--")) if terminal else "--"
         gate_text = gate_result or ("short" if gate_shortcircuited else "ready")
-        status_color = _OUTCOME_COLOR.get(outcome, _NEON_CYAN)
         local = any(x.get("source") == "local_rules" for x in merged)
         from pa_agent.ai.decision_display import SOURCE_DETAILS
         self._analysis_details.set_details(SOURCE_DETAILS if local else "")
@@ -1054,24 +1059,16 @@ class DecisionFlowVizPanel(QWidget):
             gate_text = "路径展示"
         else:
             self._legend_label.setText(self._normal_legend)
-        title = "DECISION MATRIX" if local else "AI TACTICAL DECISION MATRIX"
+        title = "DECISION MATRIX"
         self._hud_label.setText(
-            "<span style='color:{cyan}; font-weight:700;'>{title}</span>"
-            " &nbsp; <span style='color:{muted};'>|</span> &nbsp; "
-            "GATE <span style='color:{amber};'>{gate}</span>"
-            " &nbsp; <span style='color:{muted};'>|</span> &nbsp; "
-            "NODES <span style='color:{cyan};'>{nodes:02d}</span>"
-            " &nbsp; <span style='color:{muted};'>|</span> &nbsp; "
-            "G/D <span style='color:{violet};'>{gate_count}/{decision_count}</span>"
-            " &nbsp; <span style='color:{muted};'>|</span> &nbsp; "
-            "TERMINAL <span style='color:{status};'>§{terminal_id} {outcome}</span>"
+            "<span style='color:{primary}; font-weight:600;'>{title}</span>"
+            "<span style='color:{muted};'>"
+            "  ·  GATE {gate}  ·  NODES {nodes:02d}  ·  G/D {gate_count}/{decision_count}"
+            "  ·  §{terminal_id} {outcome}</span>"
             .format(
+                primary=T.TEXT_PRIMARY,
+                muted=T.TEXT_SECONDARY,
                 title=title,
-                cyan=_NEON_CYAN,
-                muted=T.TEXT_MUTED,
-                amber=_NEON_AMBER,
-                violet=_NEON_VIOLET,
-                status=status_color,
                 gate=gate_text.upper(),
                 nodes=node_count,
                 gate_count=gate_count,

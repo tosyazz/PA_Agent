@@ -10,11 +10,9 @@ from __future__ import annotations
 
 import json
 import logging
-from pathlib import Path
-from typing import TYPE_CHECKING, Optional
 
 from PyQt6.QtWidgets import (
-    QHBoxLayout,
+    QGridLayout,
     QLabel,
     QListWidget,
     QListWidgetItem,
@@ -73,49 +71,72 @@ class DebugWidget(QWidget):
 
     def _setup_ui(self) -> None:
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(8, 8, 8, 8)
-        outer.setSpacing(6)
+        outer.setContentsMargins(14, 10, 14, 12)
+        outer.setSpacing(8)
 
         # ── Main splitter: list (left) | detail (right) ───────────────────────
         splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setChildrenCollapsible(False)
 
         # Left: turn list
         left_widget = QWidget()
+        left_widget.setMinimumWidth(210)
+        left_widget.setMaximumWidth(300)
         left_layout = QVBoxLayout(left_widget)
         left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(4)
-        left_layout.addWidget(QLabel("会话轮次"))
+        left_layout.setSpacing(6)
+        turn_title = QLabel("会话轮次")
+        turn_title.setObjectName("cardMeta")
+        left_layout.addWidget(turn_title)
         self._list_widget = QListWidget()
         self._list_widget.currentRowChanged.connect(self._on_turn_selected)
-        left_layout.addWidget(self._list_widget)
+        left_layout.addWidget(self._list_widget, stretch=1)
         splitter.addWidget(left_widget)
 
-        # Right: 4 text areas + button row
+        # Right: 2×2 prompt fields + button row.  A 2×2 grid keeps each editor
+        # readable in the 860 px sidebar instead of stacking four 50 px boxes.
         right_widget = QWidget()
+        right_widget.setMinimumWidth(420)
         right_layout = QVBoxLayout(right_widget)
         right_layout.setContentsMargins(0, 0, 0, 0)
-        right_layout.setSpacing(4)
+        right_layout.setSpacing(8)
 
         self._system_edit = self._make_text_edit("System Prompt")
         self._user_edit = self._make_text_edit("User Prompt")
         self._response_edit = self._make_text_edit("Raw Response")
         self._validation_edit = self._make_text_edit("Validation / Exception")
 
-        for label, edit in (
+        grid = QGridLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
+        grid.setHorizontalSpacing(10)
+        grid.setVerticalSpacing(4)
+        fields = (
             ("System Prompt", self._system_edit),
             ("User Prompt", self._user_edit),
             ("Raw Response", self._response_edit),
             ("Validation / Exception", self._validation_edit),
-        ):
-            right_layout.addWidget(QLabel(f"<b>{label}</b>"))
-            right_layout.addWidget(edit)
+        )
+        for index, (label, edit) in enumerate(fields):
+            row = (index // 2) * 2
+            col = index % 2
+            cap = QLabel(label)
+            cap.setObjectName("fieldCaption")
+            grid.addWidget(cap, row, col)
+            edit.setMinimumHeight(92)
+            grid.addWidget(edit, row + 1, col)
+        grid.setColumnStretch(0, 1)
+        grid.setColumnStretch(1, 1)
+        grid.setRowStretch(1, 1)
+        grid.setRowStretch(3, 1)
+        right_layout.addLayout(grid, stretch=1)
 
         # Button row
         right_layout.addLayout(self._build_button_row())
 
         splitter.addWidget(right_widget)
-        splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 3)
+        splitter.setStretchFactor(0, 0)
+        splitter.setStretchFactor(1, 1)
+        splitter.setSizes([230, 620])
 
         outer.addWidget(splitter)
 
@@ -125,35 +146,43 @@ class DebugWidget(QWidget):
         edit.setPlaceholderText(placeholder)
         return edit
 
-    def _build_button_row(self) -> QHBoxLayout:
-        row = QHBoxLayout()
-        row.setSpacing(6)
+    def _build_button_row(self) -> QGridLayout:
+        grid = QGridLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
+        grid.setHorizontalSpacing(6)
+        grid.setVerticalSpacing(6)
 
+        buttons: list[QPushButton] = []
         btn_copy_system = QPushButton("复制 system")
         btn_copy_system.clicked.connect(self._copy_system)
-        row.addWidget(btn_copy_system)
+        buttons.append(btn_copy_system)
 
         btn_copy_user = QPushButton("复制 user")
         btn_copy_user.clicked.connect(self._copy_user)
-        row.addWidget(btn_copy_user)
+        buttons.append(btn_copy_user)
 
         btn_copy_response = QPushButton("复制 response")
         btn_copy_response.clicked.connect(self._copy_response)
-        row.addWidget(btn_copy_response)
+        buttons.append(btn_copy_response)
 
         btn_export = QPushButton("导出本轮 JSON")
         btn_export.clicked.connect(self._export_turn_json)
-        row.addWidget(btn_export)
+        buttons.append(btn_export)
 
         btn_copy_debug = QPushButton("复制调试信息")
         btn_copy_debug.setToolTip(
             "复制当前轮次的 Raw Response + Validation / Exception，便于粘贴给 AI 排查问题"
         )
         btn_copy_debug.clicked.connect(self._copy_debug_info)
-        row.addWidget(btn_copy_debug)
+        buttons.append(btn_copy_debug)
 
-        row.addStretch()
-        return row
+        # 3 + 2 layout keeps the row inside the narrow analyst card instead of
+        # letting five wide buttons force the whole splitter past its edge.
+        for index, button in enumerate(buttons):
+            grid.addWidget(button, index // 3, index % 3)
+        for col in range(3):
+            grid.setColumnStretch(col, 1)
+        return grid
 
     # ── Public API ────────────────────────────────────────────────────────────
 

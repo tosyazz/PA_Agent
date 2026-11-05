@@ -13,12 +13,12 @@ if TYPE_CHECKING:
 # Candle colors — brighter for better contrast on dark backgrounds
 # close >= open → price went UP → green
 # close <  open → price went DOWN → red
-_COLOR_UP = QColor(0, 208, 132)    # #00d084  vivid green
-_COLOR_DOWN = QColor(255, 71, 87)  # #ff4757  vivid red
+_COLOR_UP = QColor(48, 209, 88)    # Apple system green
+_COLOR_DOWN = QColor(255, 69, 58)  # Apple system red
 
 # Candle body width as a fraction of the x-spacing (0..1)
-_BODY_WIDTH = 0.68
-_FORMING_BODY_WIDTH = 0.58
+_BODY_WIDTH = 0.58
+_FORMING_BODY_WIDTH = 0.50
 
 
 class CandleItem(pg.GraphicsObject):

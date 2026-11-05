@@ -4,16 +4,17 @@
 
 ---
 
-面向主观交易者的 **价格行为（Price Action）** AI 辅助决策工具。从 **MT5 / TradingView / yfinance / AkShare** 读取 K 线，将结构化 K 线数据与预计算特征送入大模型做**两阶段分析**（市场诊断 → 交易决策），**不是**截图识图，**不连接券商、不执行下单**。
+面向主观交易者的 **价格行为（Price Action）** AI 辅助决策工具。从 **币安 Binance / OKX** 的公共 REST 接口读取加密货币现货 K 线，将结构化 K 线数据与预计算特征送入大模型做**两阶段分析**（市场诊断 → 交易决策），**不是**截图识图，**不连接券商、不执行下单**。
 
 ---
 
 ## 主要功能
 
-- 📈 **多数据源**：MT5（Windows）、TradingView（全平台）、yfinance（期货/加密货币）、AkShare（A 股）
+- 📈 **双数据源（加密货币）**：币安 Binance、OKX，现货 USDT 交易对，公共行情接口，无需交易所 API Key
 - 🧠 **两阶段 AI 分析**：市场诊断 → 策略路由 → 交易决策（限价/突破/市价或不下单）
-- 🔄 **增量分析与持续跟踪**：新增 K 线时复用上次结论；开启 `keep_analysis` 后新 K 线收盘自动触发新一轮分析
-- 🌳 **决策树可视化**：赛博科幻风格可交互流程图，自动播放闸门→策略路径动画
+- 🔄 **增量分析与新K线自动分析**：新增 K 线时复用上次结论；开启「新K线收盘自动分析」后不轮询，只在每根 1h 收盘时获取一次数据，成功后自动提交一轮分析
+- ⏱️ **内置计时器**：收盘调度使用程序内的 Qt `QTimer`，不是系统计划任务；关闭窗口即停止并清理后台线程，不留后台进程
+- 🌳 **决策树可视化**：Apple Liquid Glass 风格可交互流程图，自动播放闸门→策略路径动画
 - 🔮 **未来走势预期**：AI 预测下一根 K 线方向和下一个市场周期位置
 - 💬 **分析后自由追问**：完整对话会话管理器，实时推理流 + Token 进度条，对话历史持久化
 - 📚 **经验库**：按周期位置检索历史案例供分析参考
@@ -27,10 +28,35 @@
 
 | 项目     | 要求                                                                    |
 | -------- | ----------------------------------------------------------------------- |
-| 操作系统 | Windows 10 / 11（主支持）、macOS 12+（TradingView 数据源）              |
+| 操作系统 | Windows 10 / 11                                                          |
 | Python   | 3.11+                                                                    |
-| 数据源   | MT5 / TradingView / yfinance / AkShare **至少配置一种**                  |
-| 网络     | 可访问所配置的 AI API（如 DeepSeek、PackyAPI 等）                        |
+| 数据源   | 币安 Binance 或 OKX（现货 USDT 交易对，**二选一**，无需 API Key）          |
+| 网络     | 可访问币安/OKX 行情接口；OKX 在国内网络通常需要代理；另需可访问 AI API      |
+
+---
+
+## 快速启动（Windows）
+
+```bat
+python run.py
+```
+
+或直接双击项目根目录的 `启动PA_Agent.bat`（会自动检测本机 7897 代理并注入环境变量）。
+首次启动后在「AI 模型设置」里填写 DeepSeek API Key 即可。
+
+## 云电脑 / 新机器部署（Windows）
+
+```bat
+git clone https://github.com/rosemarycox5334-debug/PA_Agent.git
+cd PA_Agent
+python -m venv .venv
+.venv\Scripts\activate
+python -m pip install -e .
+python run.py
+```
+
+首次启动会生成 `config/settings.json`；API Key、飞书 Webhook 等本地配置不会提交到仓库。
+若云电脑访问币安/OKX 需要代理，先设置 `HTTP_PROXY` / `HTTPS_PROXY`，或确认本机 7897 端口有代理后再双击 `启动PA_Agent.bat`。
 
 ---
 

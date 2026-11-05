@@ -20,13 +20,12 @@ def test_defaults(tmp_path):
     assert s.provider.reasoning_effort == "low"
     assert s.provider.context_window == 2_000_000
     assert s.general.analysis_bar_count == 100
-    # 默认数据源为 MT5, 默认品种为现货黄金 XAUUSDm
-    assert s.general.last_data_source == "mt5"
-    assert s.general.last_symbol == "XAUUSDm"
-    assert s.general.last_timeframe == "15m"
+    # 默认数据源为币安, 默认交易对为 BTCUSDT
+    assert s.general.last_data_source == "binance"
+    assert s.general.last_symbol == "BTCUSDT"
+    assert s.general.last_timeframe == "1h"
     assert s.general.decision_stance == "balanced"
     assert s.general.decision_flow_auto_play is True
-    assert s.general.auto_resume_chart_after_analysis is False
     assert p.exists(), "defaults should be written to disk"
 
 
@@ -39,8 +38,8 @@ def test_round_trip(tmp_path):
     save_settings(original, p)
     loaded = load_settings(p)
     assert loaded.provider.api_key == "sk-test-1234"
-    # 默认数据源为 mt5, 加密货币代码 BTCUSDT 迁移为 MT5 现货黄金默认品种 XAUUSDm
-    assert loaded.general.last_symbol == "XAUUSDm"
+    # A valid crypto pair must survive the load-time migration unchanged.
+    assert loaded.general.last_symbol == "BTCUSDT"
     assert loaded.provider.model == original.provider.model
 
 

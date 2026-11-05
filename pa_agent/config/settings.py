@@ -5,9 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 DecisionStance = Literal["conservative", "balanced", "aggressive", "extreme_aggressive"]
-DataSourceKind = Literal[
-    "mt5", "tradingview", "ashare", "akshare", "eastmoney_futures", "tushare"
-]
+DataSourceKind = Literal["binance", "okx"]
 NormalizationMode = Literal["strict", "lenient"]
 
 
@@ -72,15 +70,13 @@ class GeneralSettings(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     analysis_bar_count: int = Field(default=100, ge=2, le=5000)
-    refresh_interval_ms: int = 1000
     context_warning_threshold_pct: float = 99_999_999.0
-    last_data_source: DataSourceKind = "mt5"
+    last_data_source: DataSourceKind = "binance"
     #: A-share K-line adjust for East Money / Baostock (qfq=前复权)
     kline_adjust: Literal["qfq", "hfq", "none"] = "qfq"
-    #: TradingView 交易所；空字符串 =（自动）依次探测预设列表
-    last_tradingview_exchange: str = ""
-    last_symbol: str = "XAUUSDm"
-    last_timeframe: str = "15m"
+    #: 交易对（Binance 风格，如 BTCUSDT；OKX 适配器自动转成 BTC-USDT）
+    last_symbol: str = "BTCUSDT"
+    last_timeframe: str = "1h"
     decision_flow_auto_play: bool = True
     decision_flow_play_seconds: int = 50
     #: 阶段二给出限价/突破/市价单时：警报音、弹窗，并自动切到「决策」页（跳过决策树可视化演示）
@@ -94,9 +90,7 @@ class GeneralSettings(BaseModel):
     stream_pane_font_pt: int = Field(default=11, ge=8, le=28)
     #: K 线图上 #序号 标签的字号（pt）
     chart_seq_label_font_pt: int = Field(default=11, ge=6, le=24)
-    #: 两阶段分析结束后是否自动恢复 K 线图表实时刷新
-    auto_resume_chart_after_analysis: bool = False
-    #: 持续跟踪分析：有新K线收盘时自动触发新一轮分析
+    #: 新K线收盘自动分析：每个 1h 收盘只取一次数据并分析
     keep_analysis: bool = False
     #: 重试后取消持续跟踪分析：校验失败触发重试后自动关闭 keep_analysis
     cancel_keep_analysis_on_retry: bool = False
@@ -111,11 +105,10 @@ class GeneralSettings(BaseModel):
     @field_validator("last_data_source", mode="before")
     @classmethod
     def _coerce_legacy_data_source(cls, v: object) -> object:
-        if v in ("yfinance", "eastmoney", "adata", "a_share"):
-            return "ashare"
-        if v == "tushare":
-            return "tushare"
-        return v
+        # Old installs could store mt5/tradingview/ashare/…; only crypto remains.
+        if v in ("binance", "okx"):
+            return v
+        return "binance"
 
     @field_validator("decision_flow_default_zoom_pct", mode="before")
     @classmethod
@@ -248,9 +241,9 @@ def load_settings(path: Path | None = None) -> "Settings":
     if "cost_warning_threshold_pct" in general and "context_warning_threshold_pct" not in general:
         general["context_warning_threshold_pct"] = general.pop("cost_warning_threshold_pct")
     general.pop("last_htf_text", None)
-    from pa_agent.data.market_defaults import migrate_general_gold_defaults
+    from pa_agent.data.market_defaults import migrate_general_crypto_defaults
 
-    migrate_general_gold_defaults(general)
+    migrate_general_crypto_defaults(general)
     if "default_bar_count" in general and "analysis_bar_count" not in general:
         general["analysis_bar_count"] = general.pop("default_bar_count")
     raw["general"] = general

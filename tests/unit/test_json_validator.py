@@ -21,9 +21,18 @@ from tests.fixtures.validators import schema_test_validator
 _validator = schema_test_validator()
 
 
+def _sample_text() -> str:
+    """Optional local real-world fixture (gitignored); skip when absent."""
+    if not _SAMPLE.exists():
+        pytest.skip(
+            "optional fixture tools/stage2_raw_sample.txt is absent (gitignored)"
+        )
+    return _SAMPLE.read_text(encoding="utf-8")
+
+
 def test_stage2_raw_sample_repair_then_parse():
     """Broken stage-2 sample with inner quotes must parse after repair."""
-    raw = _SAMPLE.read_text(encoding="utf-8")
+    raw = _sample_text()
     stripped = _strip_fences(raw)
     repaired = _repair_unescaped_quotes(stripped)
     obj = json.loads(repaired)
@@ -33,7 +42,7 @@ def test_stage2_raw_sample_repair_then_parse():
 
 def test_strip_fences_includes_repair():
     """_strip_fences applies quote repair so json.loads succeeds directly."""
-    raw = _SAMPLE.read_text(encoding="utf-8")
+    raw = _sample_text()
     obj = json.loads(_strip_fences(raw))
     assert isinstance(obj["decision_trace"], list)
 

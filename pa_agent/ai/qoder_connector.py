@@ -22,7 +22,10 @@ import logging
 import os
 import socket
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pa_agent.config.settings import AIProviderSettings
 
 logger = logging.getLogger(__name__)
 

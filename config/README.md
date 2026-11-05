@@ -18,11 +18,7 @@
 
 3. `config/exception_state.json` 由程序在需要时自动创建，一般无需手动复制。结构可参考 `exception_state.example.json`。
 
-4. 如需自定义 TradingView 品种别名，复制模板：
-
-   ```cmd
-   copy config\tv_symbol_aliases.example.json config\tv_symbol_aliases.json
-   ```
+4. 交易对直接在 GUI 的「交易对」输入框填写，如 `BTCUSDT`、`ETHUSDT`。
 
 ## `settings.json` 字段说明
 
@@ -44,17 +40,14 @@
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `general.last_data_source` | string | `"mt5"` | K 线数据来源：`mt5` / `tradingview`（GUI 下拉选项）；`akshare` / `yfinance`（仅代码支持） |
-| `general.last_tradingview_exchange` | string | `""` | TradingView 交易所。空字符串 =（自动）依次探测预设列表。如 `OANDA`、`SSE`、`HKEX` 等 |
-| `general.last_symbol` | string | `"XAUUSDm"` | 默认品种。MT5 需含后缀（如 `m`），TradingView 用标准名（如 `XAUUSD`） |
-| `general.last_timeframe` | string | `"15m"` | 默认周期，如 `1m`、`5m`、`15m`、`1h`、`4h`、`1d` |
+| `general.last_data_source` | string | `"binance"` | K 线数据来源：`binance`（币安）/ `okx`（OKX），现货 USDT 交易对 |
+| `general.last_symbol` | string | `"BTCUSDT"` | 默认交易对，Binance 风格；OKX 适配器自动转成 `BTC-USDT` |
+| `general.last_timeframe` | string | `"1h"` | K线周期；本版本仅保留 `1h`，其它值会在加载时迁移为 `1h` |
 | `general.analysis_bar_count` | int | `100` | 提交分析时使用的 K 线数量（2–5000） |
-| `general.refresh_interval_ms` | int | `1000` | 图表自动刷新间隔（毫秒） |
-| `general.context_warning_threshold_pct` | float | `80.0` | 上下文占用警告阈值（百分比） |
+| `general.context_warning_threshold_pct` | float | `99999999.0` | 上下文占用警告阈值（百分比） |
 | `general.decision_stance` | string | `"balanced"` | 阶段二交易倾向：`conservative` / `balanced` / `aggressive` / `extreme_aggressive` |
 | `general.incremental_max_new_bars` | int | `10` | 增量分析触发阈值：新增已收盘 K 线 ≤ 此值时自动走增量模式（0–500） |
-| `general.auto_resume_chart_after_analysis` | bool | `false` | 分析结束后是否自动恢复「图表实时更新」 |
-| `general.keep_analysis` | bool | `false` | 持续跟踪分析：新 K 线收盘时自动触发新一轮分析 |
+| `general.keep_analysis` | bool | `false` | 新K线收盘自动分析：开启后不轮询，只在每根 1h 收盘时获取一次数据，成功后自动开始分析 |
 | `general.cancel_keep_analysis_on_retry` | bool | `false` | 校验失败触发重试后自动关闭 `keep_analysis` |
 | `general.alert_on_order_opportunity` | bool | `true` | 阶段二给出交易方案时播放警报音、弹窗提示，并自动切换到「决策」页 |
 | `general.decision_flow_auto_play` | bool | `true` | 决策树可视化自动播放 |

@@ -27,9 +27,9 @@ from PyQt6.QtWidgets import (
 _NO_ORDER = "不下单"
 
 # Reasoning text — larger than default mutedLabel (11px)
-_REASON_FONT_CSS = "font-size: 14px; color: #c9d1d9; line-height: 1.45;"
+_REASON_FONT_CSS = "font-size: 14px; color: #D1D1D6; line-height: 1.45;"
 _REASON_EDIT_CSS = (
-    "font-size: 14px; color: #e6edf3; line-height: 1.45;"
+    "font-size: 14px; color: #E5E5EA; line-height: 1.45;"
     "font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;"
 )
 
@@ -297,8 +297,9 @@ class DecisionPanel(QWidget):
 
     def _apply_diag_chip_style(self, label: QLabel, *, color: str) -> None:
         label.setStyleSheet(
-            f"font-size: 14px; font-weight: bold; padding: 8px 10px;"
-            f"color: {color}; background-color: #21262d; border-radius: 8px;"
+            f"font-size: 14px; font-weight: 600; padding: 9px 12px;"
+            f"color: {color}; background-color: rgba(255, 255, 255, 0.06);"
+            f"border: 1px solid rgba(255, 255, 255, 0.075); border-radius: 12px;"
         )
 
     # ── Data binding helpers ──────────────────────────────────────────────
@@ -410,8 +411,9 @@ class DecisionPanel(QWidget):
     def _set_conclusion_bar_style(self) -> None:
         self._conclusion_bar.setStyleSheet(
             "QFrame#conclusionBar {"
-            "  background-color: #21262d;"
-            "  border-radius: 8px;"
+            "  background-color: rgba(255, 255, 255, 0.06);"
+            "  border: 1px solid rgba(255, 255, 255, 0.075);"
+            "  border-radius: 12px;"
             "}"
         )
 

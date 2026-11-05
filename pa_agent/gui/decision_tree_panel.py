@@ -7,10 +7,11 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QPalette
 from PyQt6.QtWidgets import (
     QAbstractItemView,
-    QFrame,
+    QComboBox,
+    QHBoxLayout,
     QHeaderView,
     QLabel,
-    QSplitter,
+    QStackedWidget,
     QTableWidget,
     QTableWidgetItem,
     QTreeWidget,
@@ -77,41 +78,62 @@ class DecisionTreePanel(QWidget):
 
     def _setup_ui(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setContentsMargins(16, 10, 16, 12)
         layout.setSpacing(8)
 
         title = QLabel("二元决策树")
         title.setObjectName("toolbarTitle")
-        layout.addWidget(title)
+        title_row = QHBoxLayout()
+        title_row.setContentsMargins(0, 0, 0, 0)
+        title_row.addWidget(title)
+        title_row.addStretch(1)
+        view_caption = QLabel("视图")
+        view_caption.setObjectName("fieldCaption")
+        title_row.addWidget(view_caption)
+        title_row.addSpacing(6)
+        self._view_combo = QComboBox()
+        self._view_combo.setObjectName("ghostCombo")
+        self._view_combo.addItems(["路径回放", "完整决策树"])
+        self._view_combo.setFixedWidth(136)
+        title_row.addWidget(self._view_combo)
+        layout.addLayout(title_row)
         from pa_agent.gui.analysis_details import AnalysisDetails
         self._analysis_details = AnalysisDetails()
         layout.addWidget(self._analysis_details)
 
         self._terminal_banner = QLabel("等待分析…")
         self._terminal_banner.setWordWrap(True)
-        self._terminal_banner.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._terminal_banner.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
         self._terminal_banner.setStyleSheet(
-            f"font-size: 14px; font-weight: bold; padding: 10px;"
-            f"color: {T.TEXT_SECONDARY}; background-color: {T.BG_ELEVATED};"
-            f"border-radius: {T.RADIUS}px;"
+            f"font-size: 12px; padding: 2px 0;"
+            f"color: {T.TEXT_SECONDARY}; background: transparent; border: none;"
         )
         layout.addWidget(self._terminal_banner)
 
-        sep = QFrame()
-        sep.setFrameShape(QFrame.Shape.HLine)
-        layout.addWidget(sep)
+        self._view_stack = QStackedWidget()
+        self._view_stack.addWidget(self._build_path_page())
+        self._view_stack.addWidget(self._build_tree_page())
+        self._view_combo.currentIndexChanged.connect(self._view_stack.setCurrentIndex)
+        layout.addWidget(self._view_stack, stretch=1)
 
-        splitter = QSplitter(Qt.Orientation.Vertical)
+        self._gate_hint = QLabel("")
+        self._gate_hint.setObjectName("mutedLabel")
+        self._gate_hint.setWordWrap(True)
+        layout.addWidget(self._gate_hint)
 
-        path_wrap = QWidget()
-        path_layout = QVBoxLayout(path_wrap)
-        path_layout.setContentsMargins(0, 0, 0, 0)
-        path_title = QLabel("路径回放")
-        path_title.setStyleSheet(f"font-weight: bold; color: {T.ACCENT_PRIMARY};")
-        path_layout.addWidget(path_title)
-        path_sub = QLabel("阶段一闸门 → 阶段二策略（悬停节点可查看完整问题）")
-        path_sub.setObjectName("mutedLabel")
-        path_layout.addWidget(path_sub)
+        self._path_table.itemSelectionChanged.connect(self._on_path_row_selected)
+
+    def _build_path_page(self) -> QWidget:
+        page = QWidget()
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(0, 0, 0, 0)
+        page_layout.setSpacing(6)
+        sub = QLabel("阶段一闸门 → 阶段二策略（悬停节点可查看完整问题）")
+        sub.setObjectName("mutedLabel")
+        sub.setWordWrap(True)
+        page_layout.addWidget(sub)
 
         self._path_table = QTableWidget(0, 6)
         self._path_table.setObjectName("pathReplayTable")
@@ -140,35 +162,33 @@ class DecisionTreePanel(QWidget):
         self._path_table.setColumnWidth(2, 44)
         self._path_table.setColumnWidth(3, 52)
         self._path_table.setColumnWidth(4, 72)
-        path_layout.addWidget(self._path_table)
-        splitter.addWidget(path_wrap)
+        page_layout.addWidget(self._path_table, stretch=1)
+        return page
 
-        tree_wrap = QWidget()
-        tree_layout = QVBoxLayout(tree_wrap)
-        tree_layout.setContentsMargins(0, 0, 0, 0)
-        tree_title = QLabel("完整决策树（已走过 = 高亮）")
-        tree_title.setStyleSheet(f"font-weight: bold; color: {T.TEXT_SECONDARY};")
-        tree_layout.addWidget(tree_title)
+    def _build_tree_page(self) -> QWidget:
+        page = QWidget()
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(0, 0, 0, 0)
+        page_layout.setSpacing(6)
+        hint = QLabel("已走过 = 高亮 · 展开节点查看完整问题与依据")
+        hint.setObjectName("mutedLabel")
+        hint.setWordWrap(True)
+        page_layout.addWidget(hint)
+
         self._tree = QTreeWidget()
         self._tree.setObjectName("decisionTreeView")
         _apply_dark_data_palette(self._tree)
         self._tree.setHeaderLabels(["节点", "问题", "回答", "K线依据"])
+        hdr = self._tree.header()
+        hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        hdr.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        hdr.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        hdr.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         self._tree.setColumnWidth(0, 72)
         self._tree.setColumnWidth(2, 72)
         self._tree.setColumnWidth(3, 88)
-        tree_layout.addWidget(self._tree)
-        splitter.addWidget(tree_wrap)
-
-        splitter.setStretchFactor(0, 2)
-        splitter.setStretchFactor(1, 3)
-        layout.addWidget(splitter, stretch=1)
-
-        self._gate_hint = QLabel("")
-        self._gate_hint.setObjectName("mutedLabel")
-        self._gate_hint.setWordWrap(True)
-        layout.addWidget(self._gate_hint)
-
-        self._path_table.itemSelectionChanged.connect(self._on_path_row_selected)
+        page_layout.addWidget(self._tree, stretch=1)
+        return page
 
     def _on_path_row_selected(self) -> None:
         """Highlight the matching node in the full tree when a path row is selected."""
@@ -362,9 +382,8 @@ class DecisionTreePanel(QWidget):
             if outcome in ("reject",):
                 oc = T.ACCENT_DANGER
             self._terminal_banner.setStyleSheet(
-                f"font-size: 14px; font-weight: bold; padding: 10px;"
-                f"color: {oc}; background-color: {T.BG_ELEVATED};"
-                f"border-radius: {T.RADIUS}px;"
+                f"font-size: 12px; font-weight: 600; padding: 2px 0;"
+                f"color: {oc}; background: transparent; border: none;"
             )
         elif gate_result in ("wait", "unknown"):
             gr_zh = "等待" if gate_result == "wait" else "未知"
@@ -398,9 +417,8 @@ class DecisionTreePanel(QWidget):
         self._tree.clear()
         self._terminal_banner.setText("等待分析…")
         self._terminal_banner.setStyleSheet(
-            f"font-size: 14px; font-weight: bold; padding: 10px;"
-            f"color: {T.TEXT_MUTED}; background-color: {T.BG_ELEVATED};"
-            f"border-radius: {T.RADIUS}px;"
+            f"font-size: 12px; padding: 2px 0;"
+            f"color: {T.TEXT_MUTED}; background: transparent; border: none;"
         )
         self._gate_hint.setText("")
         self._build_static_tree()

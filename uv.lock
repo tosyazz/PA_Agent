@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -849,21 +849,6 @@ wheels = [
 ]
 
 [[package]]
-name = "metatrader5"
-version = "5.0.5735"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/07/0b/3dd5143f14319dca393a3bcf11ddf24f36f16dfb8c6d1bf2b193ce0c5733/metatrader5-5.0.5735-cp311-cp311-win_amd64.whl", hash = "sha256:0d05b69cef5eb3f43ea47cb6d36dac0e7e15f82a4fb77974439c565daa54d1c9", size = 48091, upload-time = "2026-04-04T16:44:08.677Z" },
-    { url = "https://files.pythonhosted.org/packages/d9/db/42dc3437c7371492262b0642c64c7b5f67c396bbcb8101ccf182981b67b3/metatrader5-5.0.5735-cp312-cp312-win_amd64.whl", hash = "sha256:f6e8584e48f2c3f5de818f17ee65f0f5adfa1e4af29cd5f4bf3f72b91ff06e10", size = 48062, upload-time = "2026-04-04T16:44:09.905Z" },
-    { url = "https://files.pythonhosted.org/packages/87/2c/7ffc362d84f402b97773be5c6b37f1a0ab9882244c987bbb224c379d17d8/metatrader5-5.0.5735-cp313-cp313-win_amd64.whl", hash = "sha256:0933ea4a9a52b32adcf5590df00f9f75ff380a02bad7b62e23cbd757f34fbb12", size = 48071, upload-time = "2026-04-04T16:44:11.09Z" },
-    { url = "https://files.pythonhosted.org/packages/33/51/4a70004f8af537393861c31a3c211f818b8199fea8baf8c0b1f571d67c56/metatrader5-5.0.5735-cp314-cp314-win_amd64.whl", hash = "sha256:b69765be2eece9f884b60b6d008c7608ad77d7bfc5fbfbb8c23e3e3bb8dc88ba", size = 49590, upload-time = "2026-04-04T16:44:12.306Z" },
-]
-
-[[package]]
 name = "mini-racer"
 version = "0.14.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1069,7 +1054,6 @@ dependencies = [
     { name = "curl-cffi" },
     { name = "httpx", extra = ["socks"] },
     { name = "jsonschema" },
-    { name = "metatrader5", marker = "sys_platform == 'win32'" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "openai" },
@@ -1080,10 +1064,12 @@ dependencies = [
     { name = "pywin32", marker = "sys_platform == 'win32'" },
     { name = "tiktoken" },
     { name = "tushare" },
-    { name = "tvdatafeed" },
 ]
 
 [package.optional-dependencies]
+ashare-fallback = [
+    { name = "zzshare" },
+]
 dev = [
     { name = "black" },
     { name = "hypothesis" },
@@ -1102,7 +1088,6 @@ requires-dist = [
     { name = "httpx", extras = ["socks"], specifier = ">=0.27" },
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6" },
     { name = "jsonschema", specifier = ">=4.22" },
-    { name = "metatrader5", marker = "sys_platform == 'win32'", specifier = ">=5.0" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "openai", specifier = ">=1.40" },
     { name = "pandas", specifier = ">=2.2" },
@@ -1115,9 +1100,9 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5" },
     { name = "tiktoken", specifier = ">=0.7" },
     { name = "tushare", specifier = ">=1.4" },
-    { name = "tvdatafeed", git = "https://github.com/rongardF/tvdatafeed.git" },
+    { name = "zzshare", marker = "extra == 'ashare-fallback'" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["ashare-fallback", "dev"]
 
 [[package]]
 name = "packaging"
@@ -1824,15 +1809,6 @@ wheels = [
 ]
 
 [[package]]
-name = "setuptools"
-version = "83.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/34/26/f5d29e25ffdb535afef2d35cdb55b325298f96debd670da4c325e08d70f4/setuptools-83.0.0.tar.gz", hash = "sha256:025bccbbf0fa05b6192bc64ae1e7b16e001fd6d6d4d5de03c97b1c1ade523bef", size = 1154254, upload-time = "2026-07-04T15:31:22.699Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/40/e1e72872c6354b306daef1703549e8e83b4d43cfea356311bf722a043752/setuptools-83.0.0-py3-none-any.whl", hash = "sha256:29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3", size = 1008090, upload-time = "2026-07-04T15:31:20.885Z" },
-]
-
-[[package]]
 name = "simplejson"
 version = "4.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2035,17 +2011,6 @@ wheels = [
 ]
 
 [[package]]
-name = "tvdatafeed"
-version = "2.1.0"
-source = { git = "https://github.com/rongardF/tvdatafeed.git#e6f6aaa7de439ac6e454d9b26d2760ded8dc4923" }
-dependencies = [
-    { name = "pandas" },
-    { name = "requests" },
-    { name = "setuptools" },
-    { name = "websocket-client" },
-]
-
-[[package]]
 name = "typing-extensions"
 version = "4.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2109,4 +2074,17 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/07/5a/377161c2d3538d1990d7af382c79f3b2372e880b65de21b01b1a2b78691e/xlrd-2.0.2.tar.gz", hash = "sha256:08b5e25de58f21ce71dc7db3b3b8106c1fa776f3024c54e45b45b374e89234c9", size = 100167, upload-time = "2025-06-14T08:46:39.039Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1a/62/c8d562e7766786ba6587d09c5a8ba9f718ed3fa8af7f4553e8f91c36f302/xlrd-2.0.2-py2.py3-none-any.whl", hash = "sha256:ea762c3d29f4cca48d82df517b6d89fbce4db3107f9d78713e48cd321d5c9aa9", size = 96555, upload-time = "2025-06-14T08:46:37.766Z" },
+]
+
+[[package]]
+name = "zzshare"
+version = "0.4.13"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pandas" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e9/9e/5bd936dd5f0d4fc3b3533f617fedab0e488d5255e6d4c284364da89056ed/zzshare-0.4.13.tar.gz", hash = "sha256:5f5b69852f0c64e9dbeff577953dca67dc7f27a0db9af0c748ac79bfa7ede021", size = 42989, upload-time = "2026-10-31T14:24:39.344Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a3/0e/cbd05154507a1189ae876405490056241aba9cb944ce9ea7ca008d8ea5ed/zzshare-0.4.13-py3-none-any.whl", hash = "sha256:7db2027d9e21eba15eb9eed138ceb7298d06e859b0ba86540682fb23bd690634", size = 36733, upload-time = "2026-10-31T14:24:37.919Z" },
 ]

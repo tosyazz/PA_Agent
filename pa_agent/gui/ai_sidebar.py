@@ -1,9 +1,10 @@
-﻿"""Right-hand sidebar: live stream, raw I/O, prompt files debug, and decision."""
+"""Right-hand sidebar: live stream, raw I/O, prompt files debug, and decision."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from PyQt6.QtWidgets import QTabWidget, QVBoxLayout, QWidget
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QFrame, QScrollArea, QTabWidget, QVBoxLayout, QWidget
 
 from pa_agent.gui.ai_stream_window import AIStreamPanel
 from pa_agent.gui.debug_widget import DebugWidget
@@ -40,7 +41,18 @@ class AISidebar(QWidget):
         self._tabs.addTab(self.stream, "实时")
         self._tabs.addTab(self.decision_tree, "决策树")
         self._tabs.addTab(self.decision_flow_viz, "决策树可视化")
-        self._tabs.addTab(self.decision, "决策")
+
+        # Decision reports can be taller than the viewport (especially at
+        # 1080p); scroll instead of letting the bottom rows be clipped.
+        self._decision_scroll = QScrollArea()
+        self._decision_scroll.setObjectName("decisionScroll")
+        self._decision_scroll.setWidgetResizable(True)
+        self._decision_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._decision_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self._decision_scroll.setWidget(self.decision)
+        self._tabs.addTab(self._decision_scroll, "决策")
         self._tabs.addTab(self.future_trend, "未来走势预期")
         self._tabs.addTab(self.debug, "原始")
         self._tabs.addTab(self.prompt_files, "调试")

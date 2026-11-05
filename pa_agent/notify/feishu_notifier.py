@@ -308,9 +308,9 @@ def send_order_signal(
     stage2_full:
         完整的 stage2_decision 字典（含 next_cycle_prediction）。
     symbol:
-        交易品种，如 "XAUUSDm"。
+        交易品种，如 "BTCUSDT"。
     timeframe:
-        K线周期，如 "15m"。
+        K线周期，如 "1h"。
     chart_image_path:
         K线图表 PNG 的本地路径（可选）。需要在 settings.json 的 feishu 段配置
         app_id + app_secret 才能上传图片；未配置则仅发文字卡片。

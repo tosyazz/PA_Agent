@@ -12,8 +12,6 @@ _DEFAULT_METRICS = [
     ("阻力区", "—"),
 ]
 
-_FONT_MONO = '"JetBrains Mono", "Cascadia Mono", "Consolas", "Microsoft YaHei UI", monospace'
-
 
 class _MetricCard(QFrame):
     """Single metric card with a label and a value."""
@@ -28,22 +26,18 @@ class _MetricCard(QFrame):
     ) -> None:
         super().__init__(parent)
         self.setMinimumWidth(0)
-        self.setMinimumHeight(50)
+        self.setMinimumHeight(76)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.setFrameShape(QFrame.Shape.NoFrame)
-        self.setStyleSheet(
-            "background-color: #1c2128; "
-            "border: 1px solid #30363d; "
-            "border-radius: 6px;"
-        )
+        self.setObjectName("metricCard")
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 6, 10, 6)
-        layout.setSpacing(3)
+        layout.setContentsMargins(16, 13, 16, 13)
+        layout.setSpacing(7)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._title = QLabel(title)
-        self._title.setStyleSheet("font-size: 11px; color: #8b949e;")
+        self._title.setObjectName("metricTitle")
         self._title.setWordWrap(False)
         layout.addWidget(self._title)
 
@@ -51,14 +45,9 @@ class _MetricCard(QFrame):
         self._value.setWordWrap(True)
         self._value.setMinimumWidth(0)
         self._value.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Minimum)
-        if primary:
-            self._value.setStyleSheet(
-                f"font-size: 14px; font-weight: bold; color: #86efac; font-family: {_FONT_MONO};"
-            )
-        else:
-            self._value.setStyleSheet(
-                f"font-size: 13px; font-weight: bold; color: #e6edf3; font-family: {_FONT_MONO};"
-            )
+        self._value.setObjectName(
+            "metricValuePrimary" if primary else "metricValue"
+        )
         layout.addWidget(self._value)
 
     def set_value(self, text: str) -> None:
@@ -79,14 +68,11 @@ class SummaryStrip(QWidget):
         super().__init__(parent)
         self.setObjectName("summaryStrip")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        self.setStyleSheet(
-            "background-color: #161b22; border-bottom: 1px solid #30363d;"
-        )
 
         self._layout = QGridLayout(self)
-        self._layout.setContentsMargins(8, 6, 8, 6)
-        self._layout.setHorizontalSpacing(8)
-        self._layout.setVerticalSpacing(6)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setHorizontalSpacing(10)
+        self._layout.setVerticalSpacing(8)
         self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._cards: list[_MetricCard] = []
